@@ -1,0 +1,33 @@
+{
+  "name": "pcp-arcajs",
+  "version": "0.0.1",
+  "description": "js version of container service tool for pcp protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/**/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LoveKino/pcp-arcajs.git"
+  },
+  "keywords": [
+    "pcp",
+    "container",
+    "service",
+    "tool"
+  ],
+  "author": "ddchen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LoveKino/pcp-arcajs/issues"
+  },
+  "homepage": "https://github.com/LoveKino/pcp-arcajs#readme",
+  "devDependencies": {
+    "mocha": "^6.2.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "pcpjs": "git+https://github.com/LoveKino/pcpjs.git",
+    "yargs": "^14.2.0"
+  }
+}

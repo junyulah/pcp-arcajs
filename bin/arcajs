@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+const yargs = require('yargs');
+const path = require('path');
+const startServer = require('..');
+
+yargs.usage(`Usage: arcajs server
+  --config        config file path
+`);
+
+const {
+  argv
+} = yargs;
+
+const main = async () => {
+  const cnfPath = path.resolve(process.cwd(), argv.config || getUserHome() + '/' + '.arcajs.config.json');
+  const config = require(cnfPath);
+  config.funcMaps = (config.funcMaps || []).map((jsFile) => {
+    return require(path.resolve(path.dirname(cnfPath), jsFile));
+  });
+
+  switch(argv._[0]) {
+    case 'server':
+      // start server
+      startServer(config);
+      break;
+  }
+}
+
+const getUserHome = () => {
+  return process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'];
+};
+
+main();
