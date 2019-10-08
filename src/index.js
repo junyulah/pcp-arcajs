@@ -23,12 +23,24 @@ module.exports = ({
                 }
                 return m;
             }))
-        ),
-
-        headers
+        )
     );
 
     const server = http.createServer((req, res) => {
+        for (let k in headers) {
+            res.setHeader(k, headers[k]);
+        }
+
+        if (req.method === 'OPTIONS') {
+            res.setHeader('Allow', 'OPTIONS, GET, HEAD, POST');
+            res.end();
+            return;
+        }
+        if (req.method === 'HEAD') {
+            res.end();
+            return;
+        }
+
         if (req.url === '/api/pcp') {
             pcpMid(req, res);
         } else {
