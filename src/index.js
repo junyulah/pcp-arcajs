@@ -5,6 +5,27 @@ const {
     toSandboxFun
 } = require('pcpjs/lib/pcp');
 const _ = require('lodash');
+const requestor = require('cl-requestor');
+const spawnp = require('spawnp');
+
+const funcMapToSandbox = (m) => {
+    if (typeof m === 'function') {
+        // fill some useful tools
+        m = m({
+            _,
+            requestor,
+            spawn: spawnp
+        });
+    }
+    for (let k in m) {
+        let oldFun = m[k];
+        m[k] = toSandboxFun((params, ...other) => {
+            console.log(`call func=${k}, params=${params}`);
+            return oldFun(params, ...other);
+        });
+    }
+    return m;
+};
 
 module.exports = ({
     port = 5435,
@@ -13,16 +34,7 @@ module.exports = ({
 }) => {
     const pcpMid = HttpServerPcpMid(
         new Sandbox(
-            _.assign({}, ...funcMaps.map(m => {
-                for (let k in m) {
-                    let oldFun = m[k];
-                    m[k] = toSandboxFun((params, ...other) => {
-                        console.log(`call func=${k}, params=${params}`);
-                        return oldFun(params, ...other);
-                    });
-                }
-                return m;
-            }))
+            _.assign({}, ...funcMaps.map(funcMapToSandbox))
         )
     );
 

@@ -29,8 +29,10 @@
     "mocha": "^6.2.1"
   },
   "dependencies": {
+    "cl-requestor": "0.0.3",
     "lodash": "^4.17.15",
     "pcpjs": "git+https://github.com/LoveKino/pcpjs.git",
+    "spawnp": "^0.1.2",
     "yargs": "^14.2.0"
   }
 }
