@@ -14,7 +14,7 @@ const funcMapToSandbox = (m) => {
         m = m({
             _,
             requestor,
-            spawn: spawnp
+            spawnp
         });
     }
     for (let k in m) {
