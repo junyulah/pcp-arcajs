@@ -8,13 +8,23 @@ const _ = require('lodash');
 const requestor = require('cl-requestor');
 const spawnp = require('spawnp');
 
+const requestJson = async (type, options) => {
+    const {
+        body
+    } = await requestor(type, {
+        bodyParser: (body) => JSON.parse(body)
+    })(options);
+    return body;
+};
+
 const funcMapToSandbox = (m) => {
     if (typeof m === 'function') {
         // fill some useful tools
         m = m({
             _,
             requestor,
-            spawnp
+            spawnp,
+            requestJson
         });
     }
     for (let k in m) {
