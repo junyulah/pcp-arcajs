@@ -8,12 +8,12 @@ const _ = require('lodash');
 const requestor = require('cl-requestor');
 const spawnp = require('spawnp');
 
-const requestJson = async (type, options) => {
+const requestJson = async (type, options, postData) => {
   const {
     body
   } = await requestor(type, {
     bodyParser: (body) => JSON.parse(body)
-  })(options);
+  })(options, postData);
   return body;
 };
 
@@ -30,7 +30,7 @@ const funcMapToSandbox = (m) => {
   for (let k in m) {
     let oldFun = m[k];
     m[k] = toSandboxFun((params, ...other) => {
-      console.log(`call func=${k}, params=${params}`);
+      console.log(`call func=${k}, params=${JSON.stringify(params)}`);
       return oldFun(params, ...other);
     });
   }
