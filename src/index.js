@@ -1,77 +1,82 @@
 const http = require('http');
 const HttpServerPcpMid = require('pcpjs/lib/mid/httpPcpServerMid');
 const {
-    Sandbox,
-    toSandboxFun
+  Sandbox,
+  toSandboxFun
 } = require('pcpjs/lib/pcp');
 const _ = require('lodash');
 const requestor = require('cl-requestor');
 const spawnp = require('spawnp');
 
 const requestJson = async (type, options) => {
-    const {
-        body
-    } = await requestor(type, {
-        bodyParser: (body) => JSON.parse(body)
-    })(options);
-    return body;
+  const {
+    body
+  } = await requestor(type, {
+    bodyParser: (body) => JSON.parse(body)
+  })(options);
+  return body;
 };
 
 const funcMapToSandbox = (m) => {
-    if (typeof m === 'function') {
-        // fill some useful tools
-        m = m({
-            _,
-            requestor,
-            spawnp,
-            requestJson
-        });
-    }
-    for (let k in m) {
-        let oldFun = m[k];
-        m[k] = toSandboxFun((params, ...other) => {
-            console.log(`call func=${k}, params=${params}`);
-            return oldFun(params, ...other);
-        });
-    }
-    return m;
+  if (typeof m === 'function') {
+    // fill some useful tools
+    m = m({
+      _,
+      requestor,
+      spawnp,
+      requestJson
+    });
+  }
+  for (let k in m) {
+    let oldFun = m[k];
+    m[k] = toSandboxFun((params, ...other) => {
+      console.log(`call func=${k}, params=${params}`);
+      return oldFun(params, ...other);
+    });
+  }
+  return m;
 };
 
 module.exports = ({
-    port = 5435,
-    headers,
-    funcMaps
+  port = 5435,
+  headers,
+  funcMaps
 }) => {
-    const pcpMid = HttpServerPcpMid(
-        new Sandbox(
-            _.assign({}, ...funcMaps.map(funcMapToSandbox))
-        )
-    );
-
-    const server = http.createServer((req, res) => {
-        for (let k in headers) {
-            res.setHeader(k, headers[k]);
+  const pcpMid = HttpServerPcpMid(
+    new Sandbox(
+      _.assign({}, ...([
+        // default function map
+        {
+          requestJson: (params) => requestJson(...params)
         }
+      ].concat(funcMaps)).map(funcMapToSandbox))
+    )
+  );
 
-        if (req.method === 'OPTIONS') {
-            res.setHeader('Allow', 'OPTIONS, GET, HEAD, POST');
-            res.end();
-            return;
-        }
-        if (req.method === 'HEAD') {
-            res.end();
-            return;
-        }
+  const server = http.createServer((req, res) => {
+    for (let k in headers) {
+      res.setHeader(k, headers[k]);
+    }
 
-        if (req.url === '/api/pcp') {
-            pcpMid(req, res);
-        } else {
-            res.end('not supported api.');
-        }
-    });
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Allow', 'OPTIONS, GET, HEAD, POST');
+      res.end();
+      return;
+    }
+    if (req.method === 'HEAD') {
+      res.end();
+      return;
+    }
 
-    server.listen(port);
+    if (req.url === '/api/pcp') {
+      pcpMid(req, res);
+    } else {
+      res.end('not supported api.');
+    }
+  });
 
-    const addr = server.address();
-    console.log(`server started at ${addr.address}:${addr.port}`);
+  server.listen(port);
+
+  const addr = server.address();
+  console.log(`server started at ${addr.address}:${addr.port}`);
 };
