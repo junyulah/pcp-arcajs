@@ -2,7 +2,9 @@ const http = require('http');
 const HttpServerPcpMid = require('pcpjs/lib/mid/httpPcpServerMid');
 const {
   Sandbox,
-  toSandboxFun
+  toSandboxFun,
+  toLazySandboxFun,
+  FunNode
 } = require('pcpjs/lib/pcp');
 const _ = require('lodash');
 const requestor = require('cl-requestor');
@@ -12,7 +14,9 @@ const requestJson = async (type, options, postData) => {
   const {
     body
   } = await requestor(type, {
-    bodyParser: (body) => JSON.parse(body)
+    bodyParser: (body) => {
+      return JSON.parse(body);
+    }
   })(options, postData);
   return body;
 };
@@ -44,12 +48,37 @@ module.exports = ({
 }) => {
   const pcpMid = HttpServerPcpMid(
     new Sandbox(
-      _.assign({}, ...([
-        // default function map
+        _.assign({},
+          ...([
+            // default function map
+            {
+              requestJson: (params) => requestJson(...params),
+              get: async (params) => {
+				return _.get(...(await Promise.all(params)));
+			  },
+            }
+          ].concat(funcMaps)).map(funcMapToSandbox),
+
         {
-          requestJson: (params) => requestJson(...params)
+          // TODO define map function
+          // (map, list, handler)
+          // handler (item, idx, list) => _
+          // eg: (map, [1,2,3], (+, _, 1))
+          map: toLazySandboxFun(async (params, attachment, pcs) => {
+            const [list, fn] = params;
+            // fn must be FunNode instance
+			if(! fn instanceof FunNode) {
+			  throw new Error(`Expect function node, but get ${fn}`);
+			}
+
+            return Promise.all(_.map(await pcs.executePureCallAST(list, attachment), (item) => {
+			  // like curry, fn is a partitial function
+			  const handler = new FunNode(fn.funName, [item].concat(fn.params));
+			  return pcs.executePureCallAST(handler, attachment);
+            }));
+          }),
         }
-      ].concat(funcMaps)).map(funcMapToSandbox))
+      )
     )
   );
 
