@@ -11,7 +11,8 @@ const requestor = require('cl-requestor');
 const {
   writeTxt,
   readTxt,
-  exec
+  exec,
+  listDir
 } = require('./util');
 
 const requestJson = async (type, options, postData) => {
@@ -44,6 +45,12 @@ const funcMapToSandbox = (m) => {
   return m;
 };
 
+const checkPathPermission = (filePath, safeDirs) => {
+  if (_.findIndex(safeDirs, (safeDir) => filePath.startsWith(safeDir + '/') || filePath === safeDir) === -1) {
+    throw new Error(`no permission to write to ${filePath}`);
+  }
+};
+
 module.exports = ({
   port = 5435,
   headers,
@@ -68,21 +75,21 @@ module.exports = ({
 
             writeTxt: (params) => {
               const [filePath, txt] = params;
-              if (_.findIndex(safeDirs, (safeDir) => filePath.startsWith(safeDir + '/')) === -1) {
-                throw new Error(`no permission to write to ${filePath}`);
-              }
-
+              checkPathPermission(filePath, safeDirs);
               return writeTxt(filePath, txt);
             },
 
             readTxt: (params) => {
               const [filePath] = params;
-              if (_.findIndex(safeDirs, (safeDir) => filePath.startsWith(safeDir + '/')) === -1) {
-                throw new Error(`no permission to write to ${filePath}`);
-              }
-
+              checkPathPermission(filePath, safeDirs);
               return readTxt(filePath);
-            }
+            },
+
+            listDir: (params) => {
+              const [filePath] = params;
+              checkPathPermission(filePath, safeDirs);
+              return listDir(filePath);
+            },
           }
         ].concat(funcMaps)).map(funcMapToSandbox),
 
