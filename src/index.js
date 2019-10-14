@@ -60,9 +60,7 @@ module.exports = ({
             requestJson: (params) => requestJson(...params),
 
             exec: (params) => {
-              return exec(params[0], {
-                cwd: cmdDir
-              });
+              return exec(...params);
             },
 
             get: async (params) => {
