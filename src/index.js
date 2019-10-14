@@ -48,8 +48,7 @@ module.exports = ({
   port = 5435,
   headers,
   funcMaps,
-  safeDirs,
-  cmdDir
+  safeDirs
 }) => {
   const pcpMid = HttpServerPcpMid(
     new Sandbox(
