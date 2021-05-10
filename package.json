@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "cl-requestor": "0.0.6",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "pcpjs": "git+https://github.com/LoveKino/pcpjs.git",
     "spawnp": "^0.1.2",
     "yargs": "^14.2.0"
