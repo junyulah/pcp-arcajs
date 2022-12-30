@@ -27,7 +27,7 @@
   "homepage": "https://github.com/LoveKino/pcp-arcajs#readme",
   "devDependencies": {
     "mkdirp": "^0.5.1",
-    "mocha": "^6.2.1"
+    "mocha": "^10.2.0"
   },
   "dependencies": {
     "cl-requestor": "0.0.6",
